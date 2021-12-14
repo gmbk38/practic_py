@@ -18,7 +18,15 @@ def process(req):
     elif req == 'whoami':
         return os.getlogin()
     elif 'register' in req:
-        user = str(req.split()[1]) + str(req.split()[2])
+        user = str(req.split()[1]) + "^" + str(req.split()[2])
+        file = open ('users.txt','+a')
+        file.write(user + "___")
+        return 'reg'
+    elif 'login' in req:
+        user = str(req.split()[1]) + "^" + str(req.split()[2])
+        file = open ('users.txt','+a')
+        l = [line.split("___") for line in file]
+        print(l)
         return 'reg'
     elif req == 'exit':
         return str(False)
