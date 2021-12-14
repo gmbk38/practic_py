@@ -72,3 +72,11 @@ while True:
 
 
 conn.close()
+
+# req = req.split()[1]
+#         file = open("/var/www/a1.com/access.txt",'r')
+#         l = [line.split('\n') for line in file]
+#         table = []
+#         for i in range (0,len(l)):
+#             table.append(l[i])
+#         file.close()
