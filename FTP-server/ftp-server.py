@@ -7,13 +7,14 @@ ls - показывает содержимое текущей директори
 cat <filename> - отправляет содержимое файла
 '''
 admin = 0
+login = 0
 user = 0
-
-dirname = os.path.join(os.getcwd(), 'docs')
+dirname = None
 
 def process(req):
     global user
-    if req == 'pwd':
+    global dirname
+    if req == 'pwd' and login != 0:
         return dirname
     elif req == 'whoami':
         return os.getlogin()
@@ -24,24 +25,36 @@ def process(req):
         return 'reg'
     elif 'login' in req:
         user = str(req.split()[1]) + "^" + str(req.split()[2])
-        file = open ('users.txt','+a')
-        l = [line.split("___") for line in file]
-        print(l)
-        return 'reg'
+        req = req.split()[1]
+        file = open("users.txt",'r')
+        database = [line.split('___') for line in file]
+        database = database[0]
+        file.close()
+        main_data = []
+        for u in database:
+            if u == user:
+                try:
+                    os.mkdir(req)
+                except FileExistsError:
+                    pass
+                return 'user_ok'
+        return 'user_false'
     elif req == 'exit':
         return str(False)
-    elif req == 'dir':
+    elif req == 'dir' and login != 0:
         return str(os.listdir(path="."))
-    elif 'mkdir' in req:
-        os.mkdir(req.split()[1])
-    elif 'rmdir' in req:
-        os.rmdir(req.split()[1])
-    elif 'remove' in req:
-        os.remove(req.split()[1])
-    elif 'rename' in req:
-        os.rename(req.split()[1],req.split()[2])
+    elif 'mkdir' in req and login != 0:
+        os.mkdir(login + '/' + str(req.split()[1]))
+    elif 'rmdir' in req and login != 0:
+        os.rmdir(login + '/' + str(req.split()[1]))
+    elif 'remove' in req and login != 0:
+        os.remove(login + '/' + str(req.split()[1]))
+    elif 'rename' in req and login != 0:
+        os.rename(login + '/' + str(req.split()[1]), login + '/' + str(req.split()[2]))
     elif req == 'ls':
         return '; '.join(os.listdir(dirname))
+    elif login == '0':
+        return "Вы не выполнили вход"
     return 'bad request'
 
 
@@ -61,8 +74,13 @@ while True:
     response = process(request)
 
     if response == "reg":
-        response = "USER created" + str(user)
+        response = "USER created"
         conn.send(response.encode())
+
+    if response == "user_ok":
+        login = request.split()[1]
+        dirname = os.path.join(os.getcwd(), str(login))
+        # print(login)
 
 
     conn.send(response.encode())
