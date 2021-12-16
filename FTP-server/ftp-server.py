@@ -7,11 +7,14 @@ ls - показывает содержимое текущей директори
 cat <filename> - отправляет содержимое файла
 '''
 admin = 0
+admin_login = "cyberpunk"
+admin_pwd = "1234"
 login = 0
 user = 0
 dirname = None
 
 def process(req):
+    global login
     global user
     global dirname
     if req == 'pwd' and login != 0:
@@ -24,6 +27,10 @@ def process(req):
         file.write(user + "___")
         return 'reg'
     elif 'login' in req:
+        if str(req.split()[1]) == admin_login and str(req.split()[2]) == admin_pwd:
+            login = admin_login
+            dirname = os.path.join(os.getcwd())
+            return 'admin'
         user = str(req.split()[1]) + "^" + str(req.split()[2])
         req = req.split()[1]
         file = open("users.txt",'r')
@@ -41,21 +48,41 @@ def process(req):
         return 'user_false'
     elif req == 'exit':
         return str(False)
-    elif req == 'dir' and login != 0:
+    elif req == 'dir' and login != 0 and login != admin_login:
         return str(os.listdir(path="."))
-    elif 'mkdir' in req and login != 0:
+    elif 'mkdir' in req and login != 0 and login != admin_login:
         os.mkdir(login + '/' + str(req.split()[1]))
-    elif 'rmdir' in req and login != 0:
+        return "папка создана"
+    elif 'rmdir' in req and login != 0 and login != admin_login:
         os.rmdir(login + '/' + str(req.split()[1]))
-    elif 'remove' in req and login != 0:
+        return "папка удалена"
+    elif 'remove' in req and login != 0 and login != admin_login:
         os.remove(login + '/' + str(req.split()[1]))
-    elif 'rename' in req and login != 0:
+        return "файл удален"
+    elif 'rename' in req and login != 0 and login != admin_login:
         os.rename(login + '/' + str(req.split()[1]), login + '/' + str(req.split()[2]))
+        return "файл переименован"
+    elif req == 'ls':
+        return '; '.join(os.listdir(dirname))
+    #Команды для админа
+    elif req == 'dir' and login == admin_login:
+        return str(os.listdir(path="."))
+    elif 'mkdir' in req and login == admin_login:
+        os.mkdir(str(req.split()[1]))
+        return "папка создана"
+    elif 'rmdir' in req and login == admin_login:
+        os.rmdir(str(req.split()[1]))
+        return "папка удалена"
+    elif 'remove' in req and login == admin_login:
+        os.remove(str(req.split()[1]))
+        return "файл удален"
+    elif 'rename' in req and login == admin_login:
+        os.rename(str(req.split()[1]),str(req.split()[2]))
+        return "файл переименован"
     elif req == 'ls':
         return '; '.join(os.listdir(dirname))
     elif login == '0':
         return "Вы не выполнили вход"
-    return 'bad request'
 
 
 PORT = 6666
